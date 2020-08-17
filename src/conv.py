@@ -25,18 +25,22 @@ from network3 import ConvPoolLayer, FullyConnectedLayer, SoftmaxLayer
 training_data, validation_data, test_data = network3.load_data_shared()
 mini_batch_size = 10
 
-def shallow(n=3, epochs=60):
+def shallow(n=3, epochs=60, data="../data/mnist.pkl.gz"):
+    training_data_shallow, validation_data_shallow, test_data_shallow \
+        = network3.load_data_shared(filename=data)
+    test_accuracies = []
     nets = []
     for j in range(n):
-        print "A shallow net with 100 hidden neurons"
+        print "Training shallow net " + str(j) + " with 100 hidden neurons"
         net = Network([
             FullyConnectedLayer(n_in=784, n_out=100),
             SoftmaxLayer(n_in=100, n_out=10)], mini_batch_size)
         net.SGD(
-            training_data, epochs, mini_batch_size, 0.1, 
-            validation_data, test_data)
+            training_data_shallow, epochs, mini_batch_size, 0.1,
+            validation_data_shallow, test_data_shallow)
         nets.append(net)
     return nets 
+
 
 def basic_conv(n=3, epochs=60):
     for j in range(n):
@@ -125,8 +129,7 @@ def expanded_data(n=100):
     n=100, 300, and 1000.
 
     """
-    expanded_training_data, _, _ = network3.load_data_shared(
-        "../data/mnist_expanded.pkl.gz")
+    expanded_training_data, _, _ = network3.load_data_shared("../data/mnist_expanded.pkl.gz")
     for j in range(3):
         print "Training with expanded data, %s neurons in the FC layer, run num %s" % (n, j)
         net = Network([
@@ -149,8 +152,7 @@ def expanded_data_double_fc(n=100):
     try n=100, 300, and 1000.
 
     """
-    expanded_training_data, _, _ = network3.load_data_shared(
-        "../data/mnist_expanded.pkl.gz")
+    expanded_training_data, _, _ = network3.load_data_shared(filename="../data/mnist_expanded.pkl.gz")
     for j in range(3):
         print "Training with expanded data, %s neurons in two FC layers, run num %s" % (n, j)
         net = Network([
@@ -168,9 +170,8 @@ def expanded_data_double_fc(n=100):
         net.SGD(expanded_training_data, 60, mini_batch_size, 0.03, 
                 validation_data, test_data, lmbda=0.1)
 
-def double_fc_dropout(p0, p1, p2, repetitions):
-    expanded_training_data, _, _ = network3.load_data_shared(
-        "../data/mnist_expanded.pkl.gz")
+def double_fc_dropout(p0, p1, p2, repetitions, data="../data/mnist_expanded.pkl.gz"):
+    expanded_training_data, _, _ = network3.load_data_shared(filename=data)
     nets = []
     for j in range(repetitions):
         print "\n\nTraining using a dropout network with parameters ",p0,p1,p2
@@ -189,12 +190,37 @@ def double_fc_dropout(p0, p1, p2, repetitions):
             FullyConnectedLayer(
                 n_in=1000, n_out=1000, activation_fn=ReLU, p_dropout=p1),
             SoftmaxLayer(n_in=1000, n_out=10, p_dropout=p2)], mini_batch_size)
-        net.SGD(expanded_training_data, 40, mini_batch_size, 0.03, 
+        net.SGD(expanded_training_data, 40, mini_batch_size, 0.03,
                 validation_data, test_data)
         nets.append(net)
     return nets
 
-def ensemble(nets): 
+def double_fc_dropout_exp(p0, p1, p2, repetitions, data="../data/mnist_expanded.pkl.gz"):
+    exp_training_data, exp_validation_data, exp_test_data = network3.load_data_shared(filename=data)
+    nets = []
+    for j in range(repetitions):
+        print "\n\nTraining using a dropout network with parameters ",p0,p1,p2
+        print "Training with expanded data, run num %s" % j
+        net = Network([
+            ConvPoolLayer(image_shape=(mini_batch_size, 1, 28, 28),
+                          filter_shape=(20, 1, 5, 5),
+                          poolsize=(2, 2),
+                          activation_fn=ReLU),
+            ConvPoolLayer(image_shape=(mini_batch_size, 20, 12, 12),
+                          filter_shape=(40, 20, 5, 5),
+                          poolsize=(2, 2),
+                          activation_fn=ReLU),
+            FullyConnectedLayer(
+                n_in=40*4*4, n_out=1000, activation_fn=ReLU, p_dropout=p0),
+            FullyConnectedLayer(
+                n_in=1000, n_out=1000, activation_fn=ReLU, p_dropout=p1),
+            SoftmaxLayer(n_in=1000, n_out=10, p_dropout=p2)], mini_batch_size)
+        net.SGD(exp_training_data, 40, mini_batch_size, 0.03,
+                exp_validation_data, exp_test_data)
+        nets.append(net)
+    return nets
+
+def ensemble(nets):
     """Takes as input a list of nets, and then computes the accuracy on
     the test data when classifications are computed by taking a vote
     amongst the nets.  Returns a tuple containing a list of indices
@@ -227,7 +253,7 @@ def ensemble(nets):
                        if plurality_test_predictions[j] != test_y_eval[j]]
     erroneous_predictions = [plurality(all_test_predictions[j])
                              for j in error_locations]
-    print "Accuracy is {:.2%}".format((1-len(error_locations)/10000.0))
+    print "Ensemble accuracy is {:.2%}".format((1-len(error_locations)/10000.0))
     return error_locations, erroneous_predictions
 
 def plot_errors(error_locations, erroneous_predictions=None):
@@ -245,7 +271,7 @@ def plot_errors(error_locations, erroneous_predictions=None):
         plt.yticks(np.array([]))
     plt.tight_layout()
     return plt
-    
+
 def plot_filters(net, layer, x, y):
 
     """Plot the filters for net after the (convolutional) layer number
@@ -295,3 +321,4 @@ def run_experiments():
     plt = plot_filters(nets[0], 1, 8, 5)
     plt.savefig("net_full_layer_1.png")
 
+#run_experiments()
