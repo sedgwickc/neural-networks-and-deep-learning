@@ -95,7 +95,7 @@ def generate_set(ratio_images, ratio_artifacts):
         for x, y in zip(test_data[0], test_data[1]):
             artifact_test_pairs.append((x, y))
         # shuffle training data
-        random.shuffle(artifact_test_pairs)
+        #random.shuffle(artifact_test_pairs)
         artifact_test_data = [list(d) for d in zip(*artifact_test_pairs)]
         print("Saving artifact data. This may take a few minutes.")
         f = gzip.open("../data/mnist_artifact_"+str(int(percent_imgs))+"_"+str(int(percent_art))+".pkl.gz", "w")
@@ -104,10 +104,10 @@ def generate_set(ratio_images, ratio_artifacts):
 
 
 # generate new versions of MNIST data
-generate_set(0.1, 0.1)
-generate_set(0.1, 0.25)
-generate_set(0.25, 0.1)
+#generate_set(0.1, 0.1)
+#generate_set(0.1, 0.25)
+#generate_set(0.25, 0.1)
 generate_set(0.25, 0.25)
-generate_set(0.5, 0.1)
-generate_set(0.5, 0.25)
-generate_set(0.5, 0.5)
+#generate_set(0.5, 0.1)
+#generate_set(0.5, 0.25)
+#generate_set(0.5, 0.5)
