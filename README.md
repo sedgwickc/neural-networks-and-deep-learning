@@ -1,3 +1,11 @@
+# Exploring Neural Networks for Handwritten Digit Recognition in the Presence of Artifacts
+
+This repo is a fork of the one created by Michael Nielsen for his book "Neural Networks and Deep Learning". It was created to allow the use of the library he created for the book in my own research project. This research project looks at reproducing and comparing the accuracies Nielsen achieved using "clean" data to accuracies achieved using the same network structures and hyperparameters trained with data containing artifacts. The changes made to this library are meant to support this research project. 
+
+Since the experiments take days to complete when CPU bound, the experiments initially implemented with this library have been reimplemented using Keras via Google Colaboratory to take advantage of the speedup achieved when using GPUs. This allows those without a compatible GPU to run the experiments in a matter of hours rather than days. 
+
+The original README contents follows: 
+
 # Code samples for "Neural Networks and Deep Learning"
 
 This repository contains code samples for my book on ["Neural Networks
